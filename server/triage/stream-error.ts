@@ -12,6 +12,14 @@ export function triageStreamErrorMessage(error: unknown): string {
   const lower = message.toLowerCase();
 
   if (
+    lower.includes("high demand") ||
+    lower.includes("overloaded") ||
+    lower.includes("failed after")
+  ) {
+    return "All models are busy right now. Wait a minute and retry. Groq free tier: 30 req/min — avoid rapid clicks.";
+  }
+
+  if (
     lower.includes("quota") ||
     lower.includes("rate limit") ||
     lower.includes("resource_exhausted")
@@ -20,7 +28,7 @@ export function triageStreamErrorMessage(error: unknown): string {
   }
 
   if (lower.includes("api key") || lower.includes("api_key")) {
-    return "Missing or invalid GOOGLE_GENERATIVE_AI_API_KEY. Add it in .env locally and in Vercel project settings.";
+    return "Missing or invalid API key. Set GROQ_API_KEY (recommended) or GOOGLE_GENERATIVE_AI_API_KEY in Vercel env vars.";
   }
 
   if (lower.includes("missing supabase")) {

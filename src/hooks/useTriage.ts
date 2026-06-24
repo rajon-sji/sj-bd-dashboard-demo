@@ -1,8 +1,13 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { BriefSource } from "@/data/triage/sample-briefs";
+import {
+  clearTriageSession,
+  loadTriageSession,
+  saveTriageSession,
+} from "@/lib/triage/session-storage";
 import {
   tier1SnapshotSchema,
   triageResultSchema,
@@ -83,8 +88,15 @@ function mapChatStatus(
   return "streaming";
 }
 
-export function useTriage(source: BriefSource | "") {
-  const [hasStarted, setHasStarted] = useState(false);
+export function useTriage(
+  brief: string,
+  source: BriefSource | "",
+  onSessionClear?: () => void
+) {
+  const restored = useMemo(() => loadTriageSession(), []);
+  const [hasStarted, setHasStarted] = useState(
+    () => Boolean(restored?.messages.length)
+  );
 
   const transport = useMemo(
     () =>
@@ -97,6 +109,7 @@ export function useTriage(source: BriefSource | "") {
 
   const chat = useChat({
     transport,
+    messages: restored?.messages,
   });
 
   const assistantMessage =
@@ -104,15 +117,33 @@ export function useTriage(source: BriefSource | "") {
 
   const result = assistantMessage
     ? extractTriageResult(assistantMessage)
-    : null;
+    : restored?.result ?? null;
 
   const status = mapChatStatus(chat.status, hasStarted);
 
+  useEffect(() => {
+    if (status === "streaming") return;
+    if (!hasStarted && !brief.trim()) return;
+
+    const shouldPersist =
+      status === "ready" || (status === "error" && chat.messages.length > 0);
+
+    if (!shouldPersist) return;
+
+    saveTriageSession({
+      brief,
+      source,
+      messages: chat.messages,
+      result,
+      savedAt: new Date().toISOString(),
+    });
+  }, [brief, source, chat.messages, result, status, hasStarted]);
+
   const triage = useCallback(
-    async (brief: string) => {
+    async (nextBrief: string) => {
       setHasStarted(true);
       chat.setMessages([]);
-      await chat.sendMessage({ text: brief });
+      await chat.sendMessage({ text: nextBrief });
     },
     [chat]
   );
@@ -120,7 +151,9 @@ export function useTriage(source: BriefSource | "") {
   const reset = useCallback(() => {
     setHasStarted(false);
     chat.setMessages([]);
-  }, [chat]);
+    clearTriageSession();
+    onSessionClear?.();
+  }, [chat, onSessionClear]);
 
   const error =
     chat.error instanceof Error
@@ -129,6 +162,8 @@ export function useTriage(source: BriefSource | "") {
         ? "Something went wrong."
         : null;
 
+  const hasSavedSession = Boolean(restored?.result ?? result);
+
   return {
     message: assistantMessage,
     result,
@@ -136,5 +171,6 @@ export function useTriage(source: BriefSource | "") {
     error,
     triage,
     reset,
+    hasSavedSession,
   };
 }

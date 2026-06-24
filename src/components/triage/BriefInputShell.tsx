@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Sparkles } from "lucide-react";
+import { useCallback, useState } from "react";
+import { RotateCcw, Sparkles } from "lucide-react";
 
 import { TriagePanel } from "@/components/triage/TriagePanel";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useTriage } from "@/hooks/useTriage";
+import { loadTriageSession } from "@/lib/triage/session-storage";
 import {
   sampleBriefs,
   sourceLabels,
@@ -19,25 +20,45 @@ import {
 } from "@/data/triage/sample-briefs";
 
 export function BriefInputShell() {
-  const [brief, setBrief] = useState("");
-  const [source, setSource] = useState<BriefSource | "">("");
-  const { message, result, status, error, triage, reset } = useTriage(source);
+  const restored = loadTriageSession();
+  const [brief, setBrief] = useState(restored?.brief ?? "");
+  const [source, setSource] = useState<BriefSource | "">(
+    restored?.source ?? ""
+  );
+
+  const handleSessionClear = useCallback(() => {
+    setBrief("");
+    setSource("");
+  }, []);
+
+  const { message, result, status, error, triage, reset, hasSavedSession } =
+    useTriage(brief, source, handleSessionClear);
 
   const isStreaming = status === "streaming";
   const canSubmit = brief.trim().length > 0 && !isStreaming;
   const hasSnapshot = Boolean(result);
+  const showClearButton =
+    hasSnapshot || status === "ready" || status === "error";
 
   function loadSample(id: BriefSource) {
     const sample = sampleBriefs.find((b) => b.id === id);
     if (!sample) return;
+    reset();
     setBrief(sample.text);
     setSource(sample.source);
+  }
+
+  function handleStartNew() {
     reset();
   }
 
   async function handleTriage() {
     if (!canSubmit) return;
-    await triage(brief);
+    try {
+      await triage(brief);
+    } catch (caught) {
+      console.error("[triage]", caught);
+    }
   }
 
   return (
@@ -45,9 +66,24 @@ export function BriefInputShell() {
       className={`mx-auto flex w-full flex-col gap-8 ${hasSnapshot ? "max-w-4xl" : "max-w-3xl"}`}
     >
       <header className="space-y-3">
-        <div className="inline-flex items-center gap-2 rounded-full border border-border bg-brand-coral-tint px-3 py-1 text-xs font-medium text-brand-blue-deep">
-          <Sparkles className="size-3.5 text-brand-coral" aria-hidden />
-          SJ Innovation · Business Development
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-brand-coral-tint px-3 py-1 text-xs font-medium text-brand-blue-deep">
+            <Sparkles className="size-3.5 text-brand-coral" aria-hidden />
+            SJ Innovation · Business Development
+          </div>
+          {showClearButton && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleStartNew}
+              disabled={isStreaming}
+              className="gap-2"
+            >
+              <RotateCcw className="size-3.5" aria-hidden />
+              Start new brief
+            </Button>
+          )}
         </div>
         <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
           BD Triage Copilot
@@ -55,6 +91,12 @@ export function BriefInputShell() {
         <p className="max-w-xl text-base leading-relaxed text-muted-foreground">
           Paste a messy brief. Get a grounded first-response snapshot in
           seconds — backed by real SJI projects.
+          {hasSavedSession && hasSnapshot && (
+            <span className="mt-1 block text-xs text-muted-foreground/80">
+              Your last triage is saved in this browser until you start a new
+              brief.
+            </span>
+          )}
         </p>
       </header>
 
@@ -115,6 +157,12 @@ export function BriefInputShell() {
             {isStreaming ? "Triaging…" : "Triage brief"}
           </Button>
         </div>
+
+        {error && (
+          <p className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+            {error}
+          </p>
+        )}
 
         {!brief.trim() && status === "idle" && (
           <p className="text-sm text-muted-foreground">

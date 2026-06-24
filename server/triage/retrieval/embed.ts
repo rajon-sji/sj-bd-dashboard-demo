@@ -1,17 +1,24 @@
 import { embed, embedMany } from "ai";
 
 import {
+  createGoogleEmbeddingModel,
   embedDocumentOptions,
+  embedManyWithGroq,
   embedQueryOptions,
-  embeddingModel,
+  embedWithGroq,
+  getEmbeddingProvider,
 } from "../ai.js";
 
 export async function embedText(
   value: string,
   mode: "document" | "query" = "query"
 ): Promise<number[]> {
+  if (getEmbeddingProvider() === "groq") {
+    return embedWithGroq(value);
+  }
+
   const { embedding } = await embed({
-    model: embeddingModel,
+    model: createGoogleEmbeddingModel(),
     value,
     providerOptions:
       mode === "document" ? embedDocumentOptions : embedQueryOptions,
@@ -22,8 +29,12 @@ export async function embedText(
 export async function embedTexts(values: string[]): Promise<number[][]> {
   if (values.length === 0) return [];
 
+  if (getEmbeddingProvider() === "groq") {
+    return embedManyWithGroq(values);
+  }
+
   const { embeddings } = await embedMany({
-    model: embeddingModel,
+    model: createGoogleEmbeddingModel(),
     values,
     providerOptions: embedDocumentOptions,
   });

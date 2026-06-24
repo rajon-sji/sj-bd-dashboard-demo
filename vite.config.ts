@@ -2,10 +2,18 @@ import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+import { triageDevApiPlugin } from "./vite-plugin-triage-dev-api";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
+
+  // Server-side triage code reads process.env (dev API plugin + scripts).
+  if (mode === "development") {
+    for (const [key, value] of Object.entries(env)) {
+      if (value) process.env[key] = value;
+    }
+  }
 
   // Vite only auto-exposes VITE_* — map Supabase integration vars too (Vercel sets NEXT_PUBLIC_*).
   const supabaseUrl =
@@ -21,7 +29,11 @@ export default defineConfig(({ mode }) => {
       host: "::",
       port: 8080,
     },
-    plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+    plugins: [
+      react(),
+      mode === "development" && triageDevApiPlugin(),
+      mode === "development" && componentTagger(),
+    ].filter(Boolean),
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),

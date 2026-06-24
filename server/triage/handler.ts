@@ -1,8 +1,6 @@
-import { createAgentUIStreamResponse } from "ai";
-
-import { createTriageAgent } from "./agent/triage-agent.js";
 import { buildTriagePrompt } from "./agent/prompt.js";
 import type { BriefSource } from "./data/sample-briefs.js";
+import { runTriageWithModelFallback } from "./run-with-fallback.js";
 import { triageStreamErrorMessage } from "./stream-error.js";
 
 export const maxDuration = 60;
@@ -25,39 +23,32 @@ export async function handleTriagePost(req: Request): Promise<Response> {
   const source = body.source ?? "";
 
   try {
-    const agent = createTriageAgent(source);
+    const uiMessages =
+      body.messages?.length ?
+        body.messages
+      : (() => {
+          const brief = body.brief?.trim();
+          if (!brief) return null;
+          return [
+            {
+              id: crypto.randomUUID(),
+              role: "user",
+              parts: [{ type: "text", text: buildTriagePrompt(brief) }],
+            },
+          ];
+        })();
 
-    if (body.messages?.length) {
-      return createAgentUIStreamResponse({
-        agent,
-        uiMessages: body.messages,
-        onError: triageStreamErrorMessage,
-      });
-    }
-
-    const brief = body.brief?.trim();
-    if (!brief) {
+    if (!uiMessages?.length) {
       return Response.json(
         { error: "Paste a brief to get started." },
         { status: 400 }
       );
     }
 
-    return createAgentUIStreamResponse({
-      agent,
-      uiMessages: [
-        {
-          id: crypto.randomUUID(),
-          role: "user",
-          parts: [{ type: "text", text: buildTriagePrompt(brief) }],
-        },
-      ],
-      onError: triageStreamErrorMessage,
-    });
+    return await runTriageWithModelFallback(source, uiMessages);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Something went wrong.";
+    const message = triageStreamErrorMessage(error);
     console.error("[triage]", error);
-    return Response.json({ error: message }, { status: 500 });
+    return Response.json({ error: message }, { status: 503 });
   }
 }

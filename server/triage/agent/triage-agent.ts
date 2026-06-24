@@ -1,6 +1,6 @@
 import { ToolLoopAgent, stepCountIs } from "ai";
 
-import { reasoningModel } from "../ai.js";
+import { createReasoningModel, type ModelSpec } from "../ai.js";
 import {
   buildTriageInstructions,
   buildTriagePrompt,
@@ -8,9 +8,12 @@ import {
 import { triageTools } from "./tools.js";
 import type { BriefSource } from "../data/sample-briefs.js";
 
-export function createTriageAgent(source?: BriefSource | "") {
+export function createTriageAgent(
+  source?: BriefSource | "",
+  model?: ModelSpec | string
+) {
   return new ToolLoopAgent({
-    model: reasoningModel,
+    model: createReasoningModel(model),
     instructions: buildTriageInstructions(source),
     tools: triageTools,
     // Structured output (JSON mode) conflicts with tool calling on Gemini 2.5;
