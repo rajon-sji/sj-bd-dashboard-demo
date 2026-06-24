@@ -1,12 +1,12 @@
 import { ToolLoopAgent, stepCountIs } from "ai";
 
-import { reasoningModel } from "../ai";
+import { reasoningModel } from "../ai.js";
 import {
   buildTriageInstructions,
   buildTriagePrompt,
-} from "./prompt";
-import { triageTools } from "./tools";
-import type { BriefSource } from "../data/sample-briefs";
+} from "./prompt.js";
+import { triageTools } from "./tools.js";
+import type { BriefSource } from "../data/sample-briefs.js";
 
 export function createTriageAgent(source?: BriefSource | "") {
   return new ToolLoopAgent({

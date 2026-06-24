@@ -26,8 +26,26 @@ npm run db:embed     # generate embeddings + vector index
 
 1. Create a new GitHub repo and push this project
 2. Import in Vercel as a new project
-3. Add all env vars from `.env` (see `.env.example.triage` for reference)
-4. Deploy — `/api/triage` runs as a serverless function
+3. **Connect your existing Triage Supabase** (e.g. `supabase-aero-compass` integration) **or** add env vars manually (see below)
+4. Add `GOOGLE_GENERATIVE_AI_API_KEY` manually (not from Supabase integration)
+5. Redeploy after env changes — Vite bakes env vars into the build
+
+### Required env vars on Vercel
+
+| Variable | Source |
+|----------|--------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase integration (auto) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` or `SUPABASE_ANON_KEY` | Supabase integration (auto) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase integration (auto) — for `/api/triage` |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Add manually |
+| `GOOGLE_GENERATIVE_AI_MODEL` | Optional (`gemini-2.5-flash`) |
+
+**Optional** (also work; `vite.config.ts` maps `NEXT_PUBLIC_*` → client):
+- `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY`
+
+### White screen after deploy?
+
+Usually missing env vars at **build** time. Connect Supabase integration + add Gemini key, then **Redeploy** (not just rebuild cache).
 
 ## Architecture
 

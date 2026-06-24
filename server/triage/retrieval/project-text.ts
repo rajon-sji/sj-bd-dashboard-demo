@@ -1,4 +1,4 @@
-import type { PastProject } from "@/types/portfolio";
+import type { PastProject } from "../types/portfolio.js";
 
 /** Canonical text used for embeddings — keep in sync for index + query. */
 export function projectToEmbeddingText(

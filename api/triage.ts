@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { Readable } from "node:stream";
 
-import { handleTriagePost } from "../server/triage/handler";
+import { handleTriagePost } from "../server/triage/handler.js";
 
 export const config = {
   maxDuration: 60,

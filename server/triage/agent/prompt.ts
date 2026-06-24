@@ -1,5 +1,5 @@
-import type { BriefSource } from "../data/sample-briefs";
-import { sourceLabels } from "../data/sample-briefs";
+import type { BriefSource } from "../data/sample-briefs.js";
+import { sourceLabels } from "../data/sample-briefs.js";
 
 const sourceFraming: Record<BriefSource, string> = {
   upwork:

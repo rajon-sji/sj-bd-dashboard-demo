@@ -1,9 +1,9 @@
-import { createAnonClient } from "../supabase";
-import { embedText } from "./embed";
+import { createAnonClient } from "../supabase.js";
+import { embedText } from "./embed.js";
 import type {
   PastProjectMatch,
   SearchPastProjectsOptions,
-} from "../types/portfolio";
+} from "../types/portfolio.js";
 
 type RpcRow = {
   id: string;

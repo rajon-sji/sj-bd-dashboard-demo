@@ -4,7 +4,7 @@ import {
   embedDocumentOptions,
   embedQueryOptions,
   embeddingModel,
-} from "../ai";
+} from "../ai.js";
 
 export async function embedText(
   value: string,

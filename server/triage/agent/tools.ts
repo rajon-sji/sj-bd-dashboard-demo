@@ -1,9 +1,9 @@
 import { tool } from "ai";
 import { z } from "zod";
 
-import { computeBudgetRange, fetchRateCard } from "../budget";
-import { searchPastProjects } from "../retrieval/search-past-projects";
-import { createAnonClient } from "../supabase";
+import { computeBudgetRange, fetchRateCard } from "../budget.js";
+import { searchPastProjects } from "../retrieval/search-past-projects.js";
+import { createAnonClient } from "../supabase.js";
 
 export const triageTools = {
   search_past_projects: tool({

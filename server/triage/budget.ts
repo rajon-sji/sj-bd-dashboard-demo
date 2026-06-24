@@ -1,4 +1,4 @@
-import { createAnonClient } from "./supabase";
+import { createAnonClient } from "./supabase.js";
 
 export type RateCardEntry = {
   role: string;

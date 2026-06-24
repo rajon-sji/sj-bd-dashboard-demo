@@ -1,9 +1,9 @@
 import { createAgentUIStreamResponse } from "ai";
 
-import { createTriageAgent } from "./agent/triage-agent";
-import { buildTriagePrompt } from "./agent/prompt";
-import type { BriefSource } from "./data/sample-briefs";
-import { triageStreamErrorMessage } from "./stream-error";
+import { createTriageAgent } from "./agent/triage-agent.js";
+import { buildTriagePrompt } from "./agent/prompt.js";
+import type { BriefSource } from "./data/sample-briefs.js";
+import { triageStreamErrorMessage } from "./stream-error.js";
 
 export const maxDuration = 60;
 
