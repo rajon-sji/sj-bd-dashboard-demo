@@ -1,0 +1,85 @@
+project_id = "qzzvcqoletuummdsbbio"
+
+[functions.pandadoc-manage]
+verify_jwt = false
+
+[functions.pandadoc-sync-status]
+verify_jwt = false
+
+[functions.pandadoc-check-expiring]
+verify_jwt = false
+
+[functions.monitor-control-tower-health]
+verify_jwt = false
+
+[functions.manage-feedback]
+verify_jwt = true
+
+[functions.submit-feedback]
+verify_jwt = true
+
+[functions.admin-campaigns]
+verify_jwt = false
+
+[functions.sync-control-tower-full]
+verify_jwt = true
+
+[functions.sync-control-tower-employees]
+verify_jwt = false
+
+[functions.sync-control-tower-pods]
+verify_jwt = false
+
+[functions.sync-control-tower-deals]
+verify_jwt = true
+
+[functions.apply-checklist-template]
+verify_jwt = true
+
+[functions.push-to-control-tower]
+verify_jwt = true
+
+[functions.admin-campaigns-exa-research]
+verify_jwt = true
+
+[functions.campaign-lead-import]
+verify_jwt = true
+
+[functions.send-lead-import-notification]
+verify_jwt = false
+
+[functions.cleanup-sync-logs]
+verify_jwt = false
+
+[functions.zerobounce-manage]
+verify_jwt = true
+
+[functions.signing-documents-manage]
+verify_jwt = true
+
+[functions.auto-enrich-leads]
+verify_jwt = true
+
+[functions.run-ai-agent]
+verify_jwt = false
+
+[functions.bd-research-batch]
+verify_jwt = false
+
+[functions.exa]
+verify_jwt = true
+
+[functions.bd-manager-weekly-review]
+verify_jwt = false
+
+[functions.scheduled-bd-manager-weekly-review]
+verify_jwt = false
+
+[functions.external-analytics-api]
+verify_jwt = false
+
+[functions.push-analytics-to-consumers]
+verify_jwt = false
+
+[functions.analytics]
+verify_jwt = false
