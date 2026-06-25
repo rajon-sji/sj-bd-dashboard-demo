@@ -13,6 +13,7 @@ import {
   triageResultSchema,
   type TriageResult,
 } from "@/lib/triage/schemas";
+import { normalizeTriageResult } from "@/lib/triage/normalize";
 
 export type TriageStatus = "idle" | "streaming" | "ready" | "error";
 
@@ -34,14 +35,14 @@ function tryParseTriageJson(raw: string): TriageResult | null {
     try {
       const value = JSON.parse(candidate) as unknown;
       const full = triageResultSchema.safeParse(value);
-      if (full.success) return full.data;
+      if (full.success) return normalizeTriageResult(full.data);
 
       if (value && typeof value === "object" && "tier1" in value) {
         const tier1Only = tier1SnapshotSchema.safeParse(
           (value as { tier1: unknown }).tier1
         );
         if (tier1Only.success) {
-          return {
+          return normalizeTriageResult({
             tier1: tier1Only.data,
             tier2: {
               requirements: [],
@@ -52,7 +53,7 @@ function tryParseTriageJson(raw: string): TriageResult | null {
               clarifyingQuestions: [],
               draftClientMessage: "",
             },
-          };
+          });
         }
       }
     } catch {

@@ -62,15 +62,12 @@ export const seedPods: SeedPod[] = [
   },
 ];
 
+/** SJI flat rate card — $35/hr across delivery roles. */
 export const seedRateCard: SeedRate[] = [
-  { role: "Senior Engineer", hourly_rate: 110 },
-  { role: "Mid Engineer", hourly_rate: 85 },
-  { role: "Junior Engineer", hourly_rate: 65 },
-  { role: "Project Manager", hourly_rate: 90 },
-  { role: "UI/UX Designer", hourly_rate: 85 },
-  { role: "QA Engineer", hourly_rate: 70 },
-  { role: "DevOps Engineer", hourly_rate: 105 },
-  { role: "AI/ML Engineer", hourly_rate: 120 },
+  { role: "Engineer", hourly_rate: 35 },
+  { role: "Project Manager", hourly_rate: 35 },
+  { role: "Designer", hourly_rate: 35 },
+  { role: "QA", hourly_rate: 35 },
 ];
 
 /** Real SJI portfolio names + realistic augmented scope/hours for budget anchoring. */

@@ -1,174 +1,141 @@
 import type { Tier1Snapshot } from "@/lib/triage/schemas";
 import { formatUsd } from "@/lib/triage/budget";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-const verdictStyles = {
+const verdictTheme = {
   "Strong fit": {
-    badge: "bg-intel-teal/10 text-intel-teal border-intel-teal/20",
-    accent: "border-l-intel-teal",
+    text: "text-emerald-700 dark:text-emerald-400",
+    badge: "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
+    accent: "border-l-emerald-500",
   },
   "Possible fit": {
-    badge: "bg-brand-coral-tint text-brand-blue-deep border-brand-amber/30",
-    accent: "border-l-brand-amber",
+    text: "text-amber-700 dark:text-amber-400",
+    badge: "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-300",
+    accent: "border-l-amber-500",
   },
   "Poor fit": {
-    badge: "bg-destructive/10 text-destructive border-destructive/20",
+    text: "text-destructive",
+    badge: "border-destructive/30 bg-destructive/10 text-destructive",
     accent: "border-l-destructive",
   },
 } as const;
 
-const confidenceStyles = {
-  High: "text-intel-teal",
-  Medium: "text-brand-blue",
-  Low: "text-muted-foreground",
-} as const;
-
 function MatchBadge({ percent }: { percent: number }) {
-  const tone =
-    percent >= 75
-      ? "bg-intel-indigo/10 text-intel-indigo border-intel-indigo/20"
-      : percent >= 50
-        ? "bg-brand-blue/10 text-brand-blue border-brand-blue/20"
-        : "bg-muted text-muted-foreground border-border";
-
   return (
-    <span
-      className={cn(
-        "inline-flex min-w-11 shrink-0 items-center justify-center rounded-md border px-2 py-0.5 text-xs font-semibold tabular-nums",
-        tone
-      )}
-    >
-      {percent}%
-    </span>
-  );
-}
-
-function StatCell({
-  label,
-  value,
-  sub,
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-}) {
-  return (
-    <div className="min-w-0 rounded-lg border border-border/80 bg-muted/30 px-4 py-3">
-      <dt className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-        {label}
-      </dt>
-      <dd className="mt-1 text-sm font-semibold leading-snug text-foreground">
-        {value}
-      </dd>
-      {sub && (
-        <dd className="mt-0.5 text-xs text-muted-foreground">{sub}</dd>
-      )}
-    </div>
+    <Badge variant="secondary" className="tabular-nums">
+      {percent}% match
+    </Badge>
   );
 }
 
 export function Tier1SnapshotCard({ snapshot }: { snapshot: Tier1Snapshot }) {
-  const verdict = verdictStyles[snapshot.verdict];
+  const theme = verdictTheme[snapshot.verdict];
 
   return (
     <article
       className={cn(
         "overflow-hidden rounded-xl border border-border bg-card shadow-sm",
         "border-l-4",
-        verdict.accent
+        theme.accent
       )}
-      aria-label="First-response snapshot"
+      aria-label="Triage result"
     >
-      <header className="border-b border-border/80 px-6 py-5">
+      <header className="border-b border-border/80 px-6 py-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="min-w-0 space-y-2">
-            <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              First-response snapshot
-            </p>
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                {snapshot.verdict}
-              </h2>
-              <span
-                className={cn(
-                  "rounded-full border px-2.5 py-0.5 text-xs font-medium",
-                  verdict.badge
-                )}
-              >
-                {snapshot.projectType}
-              </span>
-            </div>
-            <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              {snapshot.verdictReason}
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-              Confidence
-            </p>
-            <p
+          <div className="min-w-0 space-y-3">
+            <h2
               className={cn(
-                "mt-1 text-sm font-semibold",
-                confidenceStyles[snapshot.confidence]
+                "text-4xl font-bold tracking-tight sm:text-5xl",
+                theme.text
               )}
             >
-              {snapshot.confidence}
+              {snapshot.verdict}
+            </h2>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="outline" className={theme.badge}>
+                {snapshot.projectType}
+              </Badge>
+              <Badge variant="secondary">
+                {snapshot.confidence} confidence
+              </Badge>
+            </div>
+            <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
+              {snapshot.verdictReason}
             </p>
           </div>
         </div>
       </header>
 
-      <div className="grid gap-3 px-6 py-5 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCell label="Domain" value={snapshot.domain} />
-        <StatCell
-          label="Scope"
-          value={snapshot.scopeSize}
-          sub={snapshot.hoursBand}
-        />
-        <StatCell label="Route to" value={snapshot.routeToPod} />
-        <StatCell
-          label="Budget range"
-          value={`${formatUsd(snapshot.budgetMin)} – ${formatUsd(snapshot.budgetMax)}`}
-        />
-      </div>
+      <dl className="grid gap-4 border-b border-border/80 px-6 py-5 sm:grid-cols-2">
+        <div>
+          <dt className="text-sm text-muted-foreground">Domain</dt>
+          <dd className="mt-0.5 font-medium text-foreground">{snapshot.domain}</dd>
+        </div>
+        <div>
+          <dt className="text-sm text-muted-foreground">Scope</dt>
+          <dd className="mt-0.5 font-medium text-foreground">
+            {snapshot.scopeSize}
+            <span className="font-normal text-muted-foreground">
+              {" "}
+              · {snapshot.hoursBand}
+            </span>
+          </dd>
+        </div>
+        <div>
+          <dt className="text-sm text-muted-foreground">Route to</dt>
+          <dd className="mt-0.5 font-medium text-foreground">
+            {snapshot.routeToPod}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-sm text-muted-foreground">Budget range</dt>
+          <dd className="mt-0.5 font-medium text-foreground">
+            {formatUsd(snapshot.budgetMin)} – {formatUsd(snapshot.budgetMax)}
+            <span className="block text-sm font-normal text-muted-foreground">
+              $35/hr × estimated hours
+            </span>
+          </dd>
+        </div>
+      </dl>
 
-      <div className="border-t border-border/80 px-6 py-5">
-        <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-          Suggested stack
-        </p>
-        <ul className="mt-3 flex flex-wrap gap-2">
+      <div className="border-b border-border/80 px-6 py-5">
+        <h3 className="text-sm font-medium text-foreground">Suggested stack</h3>
+        <ul className="mt-2 flex flex-wrap gap-2">
           {snapshot.suggestedStack.map((tech) => (
-            <li
-              key={tech}
-              className="rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-foreground"
-            >
-              {tech}
+            <li key={tech}>
+              <Badge variant="outline">{tech}</Badge>
             </li>
           ))}
         </ul>
       </div>
 
-      <div className="border-t border-border/80 bg-muted/20 px-6 py-5">
-        <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-          Grounded in {snapshot.groundedProjects.length} similar SJI project
-          {snapshot.groundedProjects.length === 1 ? "" : "s"}
-        </p>
-        <ul className="mt-3 space-y-2">
-          {snapshot.groundedProjects.map((project) => (
-            <li
-              key={project.slug}
-              className="flex items-center gap-3 rounded-lg border border-border/60 bg-card px-3 py-2.5"
-            >
-              <MatchBadge percent={project.matchPercent} />
-              <span className="min-w-0 text-sm font-medium text-foreground">
-                {project.title}
-              </span>
-            </li>
-          ))}
-        </ul>
+      <div className="border-b border-border/80 bg-muted/20 px-6 py-5">
+        <h3 className="text-sm font-medium text-foreground">
+          Similar SJI projects
+        </h3>
+        {snapshot.groundedProjects.length > 0 ? (
+          <ul className="mt-3 space-y-2">
+            {snapshot.groundedProjects.map((project) => (
+              <li
+                key={project.slug}
+                className="flex flex-wrap items-center gap-2 rounded-lg border border-border/60 bg-card px-3 py-2.5"
+              >
+                <span className="text-sm font-medium text-foreground">
+                  {project.title}
+                </span>
+                <MatchBadge percent={project.matchPercent} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-2 text-sm text-muted-foreground">
+            No close portfolio matches — try a broader brief.
+          </p>
+        )}
       </div>
 
-      <footer className="border-t border-border/80 px-6 py-4">
+      <footer className="px-6 py-4">
         <p className="text-sm text-muted-foreground">
           <span className="font-medium text-foreground">Biggest risk:</span>{" "}
           {snapshot.biggestRisk}

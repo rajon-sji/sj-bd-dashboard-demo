@@ -36,6 +36,19 @@ async function seed() {
   if (podsError) throw podsError;
 
   console.log("Seeding rate card...");
+  const keepRoles = seedRateCard.map((r) => r.role);
+  const { data: existingRates } = await supabase.from("rate_card").select("role");
+  const staleRoles =
+    existingRates
+      ?.map((row) => row.role)
+      .filter((role) => !keepRoles.includes(role)) ?? [];
+  if (staleRoles.length > 0) {
+    const { error: deleteError } = await supabase
+      .from("rate_card")
+      .delete()
+      .in("role", staleRoles);
+    if (deleteError) throw deleteError;
+  }
   const { error: ratesError } = await supabase.from("rate_card").upsert(
     seedRateCard,
     { onConflict: "role" }
